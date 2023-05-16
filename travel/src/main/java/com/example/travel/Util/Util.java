@@ -9,4 +9,6 @@ public class Util {
     public static final String USERS = "USERS";
     public static final String CUSTOMER = "CUSTOMER";
     public static final String VENDOR = "VENDOR";
+    public static final String USER = "USER";
+
 }

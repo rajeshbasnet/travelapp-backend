@@ -9,4 +9,12 @@ public interface UserService {
 
     void registerUser(User user);
 
+    String fetchUser(String username);
+
+    void updateUser(String id, String user);
+    void updateUserWithoutPWChange(String id, String user);
+
+    String fetchAllUsers();
+
+    String fetchAllVendors();
 }

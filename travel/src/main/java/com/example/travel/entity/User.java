@@ -1,5 +1,6 @@
 package com.example.travel.entity;
 
+import com.mongodb.lang.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,9 +13,13 @@ import org.springframework.data.annotation.Id;
 @ToString
 public class User {
     @Id
-    private  int id;
-    private  String username;
-    private  String password;
+    private String id;
+    private String firstname;
+    private String lastname;
+    private String username;
+    private String password;
     private String role;
     private String number;
+    @Nullable
+    private String imageUri;
 }

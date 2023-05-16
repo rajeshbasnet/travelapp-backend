@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -68,9 +69,76 @@ public class UserServiceImpl implements UserService {
             throw new EmailAlreadyExistsException("Email has already been registered");
         }
 
+        user.setId(UUID.randomUUID().toString());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        User savedUser = mongoTemplate.save(user, Util.USERS);
+        User savedUser = mongoTemplate.insert(user, Util.USERS);
         log.debug("Applicant saved into database successfully with id :{}", savedUser.getId());
+    }
+
+    @Override
+    public String fetchUser(String username) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("username").is(username));
+        log.info("Creating query for fetching user from username");
+        return Objects.requireNonNull(mongoTemplate.findOne(query, Document.class, Util.USERS))
+                .toJson();
+    }
+
+    @Override
+    public void updateUser(String id, String user) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(id));
+
+        Document document = Document.parse(user);
+        document.put("password", passwordEncoder.encode(document.getString("password")));
+        Update update = Update.fromDocument(document);
+
+        mongoTemplate.updateFirst(query, update, Util.USERS);
+    }
+
+    @Override
+    public void updateUserWithoutPWChange(String id, String user) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(id));
+
+        Document document = Document.parse(user);
+        Update update = Update.fromDocument(document);
+
+        mongoTemplate.updateFirst(query, update, Util.USERS);
+    }
+
+
+    @Override
+    public String fetchAllUsers() {
+        Query query = new Query();
+
+        Criteria criteria = Criteria.where("role")
+                .is(Util.USER);
+        query.addCriteria(criteria);
+
+        return mongoTemplate.find(query, Document.class, Util.USERS)
+                .stream()
+                .map(Document::toJson)
+                .map(JSONObject::new)
+                .toList()
+                .toString();
+    }
+
+
+    @Override
+    public String fetchAllVendors() {
+        Query query = new Query();
+
+        Criteria criteria = Criteria.where("role")
+                .is(Util.VENDOR);
+        query.addCriteria(criteria);
+
+        return mongoTemplate.find(query, Document.class, Util.USERS)
+                .stream()
+                .map(Document::toJson)
+                .map(JSONObject::new)
+                .toList()
+                .toString();
     }
 
 

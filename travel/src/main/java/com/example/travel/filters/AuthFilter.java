@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -59,16 +60,15 @@ public class AuthFilter extends OncePerRequestFilter {
     }
 
     private Authentication createAuthentication(String token, Map<String, Object> claims) {
-
         try {
             CustomUserDetails customUserDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(claims.get(Claims.SUBJECT).toString());
             boolean isTokenValid = jwtUtil.validateToken(token, customUserDetails);
-            int userId = (int) claims.get("userId");
+            String userId = (String) claims.get("userId");
 
             log.info("Token valid status : {}", isTokenValid);
             log.info(customUserDetails.getAuthorities());
 
-            if (isTokenValid && userId == customUserDetails.getId()) {
+            if (isTokenValid && Objects.equals(userId, customUserDetails.getId())) {
                 return new UsernamePasswordAuthenticationToken(customUserDetails.getId(), null, customUserDetails.getAuthorities());
             } else {
                 throw new NotAuthenticatedException("Request token is invalid.");
@@ -77,8 +77,6 @@ public class AuthFilter extends OncePerRequestFilter {
         }catch (BadCredentialsException exception) { // This exception is likely to occur if cannot find user by username using token's subject
             throw new NotAuthenticatedException("Request token is invalid");
         }
-
-
     }
 
 }
